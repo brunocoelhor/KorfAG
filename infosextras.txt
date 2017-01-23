@@ -1,0 +1,41 @@
+xC1 - xP + yC1 - yP - k * ( xC2 - xC1 + yC2 - yC1 + xC3 - xC1 + yC3 - yC1 + xC4 - xC1 + yC4 - yC1 )
+
+xCi - xP + yCi - yP - k * ( xC2 - xCi + yC2 - yCi + xC3 - xCi + yC3 - yCi + xC4 - xCi + yC4 - yCi )
+
+xCi - xP + yCi - yP - k * ( xC1 - xCi + yC1 - yCi + xC2 - xCi + yC2 - yCi + xC3 - xCi + yC3 - yCi )
+
+  set lista trocar "A" "xP" lista
+  set lista trocar "B" "yP" lista
+  set lista trocar "C" "xCi" lista
+  set lista trocar "D" "xC1" lista
+  set lista trocar "E" "xC2" lista
+  set lista trocar "F" "xC3" lista
+  set lista trocar "G" "yCi" lista
+  set lista trocar "H" "yC1" lista
+  set lista trocar "I" "yC2" lista
+  set lista trocar "J" "yC3" lista
+  set lista trocar "K" "k" lista
+  set lista trocar "L" "+" lista
+  set lista trocar "M" "-" lista
+  set lista trocar "N" "*" lista
+  set lista trocar "O" "/" lista
+  set lista trocar "P" "(" lista
+  set lista trocar "Q" ")" lista
+
+  set lista trocar "A" "xP" lista
+  set lista trocar "B" "yP" lista
+  set lista trocar "C" "xC1" lista
+  set lista trocar "D" "xC2" lista
+  set lista trocar "E" "xC3" lista
+  set lista trocar "F" "xC4" lista
+  set lista trocar "G" "yC1" lista
+  set lista trocar "H" "yC2" lista
+  set lista trocar "I" "yC3" lista
+  set lista trocar "J" "yC4" lista
+  set lista trocar "K" "k" lista
+  set lista trocar "L" "+" lista
+  set lista trocar "M" "-" lista
+  set lista trocar "N" "*" lista
+  set lista trocar "O" "/" lista
+  set lista trocar "P" "(" lista
+  set lista trocar "Q" ")" lista
