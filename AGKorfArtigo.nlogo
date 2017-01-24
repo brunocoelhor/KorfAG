@@ -65,9 +65,9 @@ to go
     pegar-posicoes
     ;manhattan1
     ;manhattan1AG
-    manhattan1AGTeste
-    ;manhattan2
-    ;manhattan2AG
+    ;manhattan1AGTeste ;CORRETO
+    manhattan2
+    manhattan2AG
     ;extendKorf
     ;extendKorfAG
     ;;capturar
@@ -230,65 +230,43 @@ end
 
 to manhattan2AG
   let distanciaAG 0
+  let lista1 [0 0 0 0 0 0 0 0]
+  let lista2 [0 0 0 0 0 0 0 0]
+  let lista3 [0 0 0 0 0 0 0 0]
   set manhattanPredadorAG []
   let quem [who] of predadores in-radius foc
 
-  show quem
-  ;show length quem
-
-  ;;let comunicados filter [? != who] quem
-  ;;show comunicados
+  ;show quem
 
   foreach quem [
     if (? != who)
     [
-      let PC [list pxcor pycor ] of predador ?
-      show "#################"
-      ;show pc
-      show pxcor
-      show " - "
-      show item 0 PC
-      show "+"
-      show pycor
-      show " - "
-      show item 1 PC
-      show "##################"
-      ;set distanciaAG
-      show abs (item 0 PC - pxcor) + abs (item 1 PC - pycor)
-    ]
-  ]
+      let PC [list xcor ycor ] of predador ?
+      let xPC item 0 PC
+      let yPC item 1 PC
 
-
-
-
-  foreach [0 45 90 135 180 225 270 315] [
-      if( who = 1)
-      [
+      foreach [0 45 90 135 180 225 270 315] [
         ask patch-at-heading-and-distance ? 1 [
-          if (not member? 2 quem)
-          [
-            set distanciaAG abs (xC3 - pxcor) + abs (yC3 - pycor) + abs (xC4 - pxcor) + abs (yC4 - pycor)
-          ]
-          if (not member? 3 quem)
-          [
-            set distanciaAG abs (xC2 - pxcor) + abs (yC2 - pycor)  + abs (xC4 - pxcor) + abs (yC4 - pycor)
-          ]
-          if (not member? 4 quem)
-          [
-            set distanciaAG abs (xC2 - pxcor) + abs (yC2 - pycor) + abs (xC3 - pxcor) + abs (yC3 - pycor)
-          ]
-          set distanciaAG 0
+          set distanciaAG abs (xPC - pxcor) + abs (yPC - pycor)
         ]
-      ]
+        set manhattanPredadorAG lput distanciaAG manhattanPredadorAG
+      ];end foreach [0 45 90 135 180 225 270 315] [
+    ];end if(? != who)
+  ];end foreach quem
+
+  if length manhattanPredadorAG > 0
+  [set lista1 sublist manhattanPredadorAG 0 8]
+  if length manhattanPredadorAG > 8
+  [set lista2 sublist manhattanPredadorAG 8 16]
+  if length manhattanPredadorAG > 16
+  [set lista3 sublist manhattanPredadorAG 16 24]
+
+  let soma (map [?1 + ?2 + ?3] lista1 lista2 lista3)
 
 
-      set manhattanPredadorAG lput distanciaAG manhattanPredadorAG
-  ]
-  ;;show manhattanPredadorAG
-
-  set manhattanPredadorAG (map [? * k] manhattanPredadorAG )
-  ;show "M PredadorAG"
- ; show manhattanPredadorAG
+  set manhattanPredadorAG (map [? * k] soma )
+  show "M PredadorAG"
+  show manhattanPredadorAG
 end
 
 to extendKorfAG
@@ -552,7 +530,7 @@ to manhattan2
   ;show soma
 
   set manhattanPredadores (map [? * k] soma )
-  show "MPredador"
+  show "MPredador Normal"
   show manhattanPredadores
 
 end
@@ -847,7 +825,7 @@ foc
 foc
 3
 30
-10
+15
 1
 1
 NIL
