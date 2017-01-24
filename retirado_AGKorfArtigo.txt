@@ -1,0 +1,143 @@
+;###################################################################################################################
+;###################################################################################################################
+;;########################################     ANTIGO     ##########################################################
+;;##################################################################################################################
+;###################################################################################################################
+
+;;######### Cáculo dos catetos, requisito para Coordenada Polar ###############################
+
+to-report catadj [hipo lado]
+  report (hipo * cos lado)
+end
+
+to-report catop [hipo lado]
+  report (hipo * sin lado)
+end
+
+;;######### Cáculo da primeira parte da esquação do Extend Korf ###############################
+;;######### Saída de manhattanPresa
+
+to manhattan1
+  ifelse ver-presa = []
+  [
+    set manhattanPresa [0 0 0 0 0 0 0 0]
+    set perseguindo? false
+  ]
+  [
+    let distPolar 0
+    set manhattanPresa []
+    face turtle 0
+    let dir heading
+    foreach [0 45 90 135 180 225 270 315] [
+      ask patch-at-heading-and-distance ? 1 [
+        let hipo distance presa 0
+        set distPolar (abs catadj hipo dir) + (abs catop hipo dir)
+      ]
+      set manhattanPresa lput distPolar manhattanPresa
+
+    ]
+    ;;show ManhattanPresa
+    set perseguindo? true
+    ;show "##################### estou vendo a presa ####################################"
+  ]
+  ;show "Manhattan Presa Nornal"
+  ;show manhattanPresa
+end
+
+
+;;######### Cáculo da segunda parte da esquação do Extend Korf ################################
+;;######### saída de manhattanPredadores
+
+to manhattan2
+  if not any? presas[
+    stop
+  ]
+  let distancia 0
+  let lista1 [0 0 0 0 0 0 0 0]
+  let lista2 [0 0 0 0 0 0 0 0]
+  let lista3 [0 0 0 0 0 0 0 0]
+  let manhattanPredador []
+
+  let mensagemLocalPresa [list pxcor pycor] of presa 0
+
+  let pp [list pxcor pycor ] of predadores in-radius foc
+  let quem [who] of predadores in-radius foc
+  let comunicados filter [? != who] quem  ;Pega a lista de quem ele enxerga e filtra para retirar o valor dele mesmo. ? = elelento e testa todos
+
+  foreach comunicados [
+    ask predador ? [
+      set localPresa mensagemLocalPresa
+    ]
+  ]
+
+  foreach pp [
+    let ppx item 0 ?
+    let ppy item 1 ?
+    ifelse (pxcor = ppx) and (pycor = ppy)
+    [
+      ;;show "Sou eu"
+    ]
+    [
+      foreach [0 45 90 135 180 225 270 315] [
+        ask patch-at-heading-and-distance ? 1 [
+          ;;show mensagemLocalPresa
+
+          set distancia abs (pxcor - ppx) + abs (pycor - ppy) ;;VALENDO
+        ]
+        set manhattanPredador lput distancia manhattanPredador
+      ]
+    ]
+  ]
+
+  if length manhattanPredador > 0
+  [set lista1 sublist manhattanPredador 0 8]
+  if length manhattanPredador > 8
+  [set lista2 sublist manhattanPredador 8 16]
+  if length manhattanPredador > 16
+  [set lista3 sublist manhattanPredador 16 24]
+
+  ;show lista1
+  ;show lista2
+  ;show lista3
+
+  let soma (map [?1 + ?2 + ?3] lista1 lista2 lista3)
+
+  ;show soma
+
+  set manhattanPredadores (map [? * k] soma )
+  ;show "MPredador Normal"
+  ;show manhattanPredadores
+
+end
+
+
+to ler-arquivo
+  file-open "melhor3.txt"
+  set equacao []
+  while [not file-at-end? ] [
+    set equacao file-read-line
+    set equacao string-to-list equacao
+    dividir-equacao
+
+  ]
+  file-close
+end
+
+to dividir-string
+  let i 0
+  let mylist []
+  while [i <= length equacao]
+  [
+    let local position " " equacao
+
+    let pedaco substring equacao i local
+    set equacao substring equacao local length equacao
+    set mylist lput pedaco mylist
+    ;;fput first s string-to-list but-first s
+
+  ]
+  show "Minha lista"
+    show mylist
+    show "Equacao"
+    show equacao
+end
