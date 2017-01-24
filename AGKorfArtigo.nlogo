@@ -18,10 +18,10 @@ predadores-own [
   localPresa ;Variável para armazenar a posição da pesa se estiver dentro do campo de visão ou se algum predador comunicar.
   manhattanPresa ; Armazena a primeira parte da equação, distância de manhattan do predador em relação a presa.
   manhattanPresaAG
-  manhattanPresaTeste
   manhattanPredadores ; Armazena a segunda parte da equação, a multiplicação de k com o somatório das distâncias de manhattan dos predadores.
   manhattanPredadorAG
   resultExtKorf ; Lista que armazena os 8 resultados referente as 8 posições.
+  resultExtKorfAG
   perseguindo?
 ]
 
@@ -65,11 +65,11 @@ to go
     pegar-posicoes
     ;manhattan1
     ;manhattan1AG
-    ;manhattan1AGTeste ;CORRETO
-    manhattan2
+    manhattan1AG ;CORRETO
+    ;manhattan2
     manhattan2AG
     ;extendKorf
-    ;extendKorfAG
+    extendKorfAG
     ;;capturar
     calcula-distancias
   ]
@@ -185,16 +185,16 @@ end
 ;end
 
 
-to manhattan1AGTeste
+to manhattan1AG
   ifelse ver-presa = []
   [
-    set manhattanPresaTeste [0 0 0 0 0 0 0 0]
+    set manhattanPresaAG [0 0 0 0 0 0 0 0]
   ]
   [
     let xCi pxcor
     let yCi pycor
     let distPolar 0
-    set manhattanPresaTeste []
+    set manhattanPresaAG []
     face turtle 0
     let dir heading
 
@@ -209,15 +209,15 @@ to manhattan1AGTeste
         let hipo distance presa 0
         set distPolar (abs catadj hipo dir) + (abs catop hipo dir)
       ]
-      set manhattanPresaTeste lput distPolar manhattanPresaTeste
+      set manhattanPresaAG lput distPolar manhattanPresaAG
 
     ]
     ;;show ManhattanPresa
     set perseguindo? true
     ;show "##################### estou vendo a presa ####################################"
   ]
-  show "Manhattan Presa Teste"
-  show manhattanPresaTeste
+  ;show "Manhattan Presa Teste"
+  ;show manhattanPresaAG
 end
 
 
@@ -265,13 +265,16 @@ to manhattan2AG
 
 
   set manhattanPredadorAG (map [? * k] soma )
-  show "M PredadorAG"
-  show manhattanPredadorAG
+  ;show "M PredadorAG"
+  ;show manhattanPredadorAG
 end
 
 to extendKorfAG
-  set resultExtKorf (map [?1 - ?2 ] manhattanPresaAG manhattanPredadorAG)
-  ifelse resultExtKorf = [0 0 0 0 0 0 0 0]
+  set resultExtKorfAG (map [?1 - ?2 ] manhattanPresaAG manhattanPredadorAG)
+  ;show "Resultado Korf AG"
+  ;show resultExtKorfAG
+  ;show "#########################"
+  ifelse resultExtKorfAG = [0 0 0 0 0 0 0 0]
   [
     right random 360
     forward 1
@@ -290,8 +293,8 @@ end
 
 to-report melhorPosicao [my-list]
   ;show my-list
-  ;show resultExtKorf
-  let listaMenor menorDistancia resultExtKorf
+  ;show resultExtKorfAG
+  let listaMenor menorDistancia resultExtKorfAG
   ;show  melhorp
   let menorPosicao first listaMenor ;Armazena a posição onde esta a melhor direcao para seguir Ex lista [0 45 90 135 180 225 270 315] posicao 3 = 135º
   report menorPosicao
@@ -465,8 +468,8 @@ to manhattan1
     set perseguindo? true
     ;show "##################### estou vendo a presa ####################################"
   ]
-  show "Manhattan Presa Nornal"
-  show manhattanPresa
+  ;show "Manhattan Presa Nornal"
+  ;show manhattanPresa
 end
 
 
@@ -530,8 +533,8 @@ to manhattan2
   ;show soma
 
   set manhattanPredadores (map [? * k] soma )
-  show "MPredador Normal"
-  show manhattanPredadores
+  ;show "MPredador Normal"
+  ;show manhattanPredadores
 
 end
 
@@ -539,10 +542,9 @@ end
 
 to extendKorf
   set resultExtKorf (map [?1 - ?2 ] manhattanPresa manhattanPredadores)
-  ;show "#################"
-  ;show manhattanPresa
-  ;show manhattanPredadores
-  ;show resultExtKorf
+  show "Resultado Korf"
+  show resultExtKorf
+  show "#########################"
 
   ifelse resultExtKorf = [0 0 0 0 0 0 0 0]
   [
@@ -825,7 +827,7 @@ foc
 foc
 3
 30
-15
+4
 1
 1
 NIL
