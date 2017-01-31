@@ -1,25 +1,19 @@
 breed [presas presa]
 breed [predadores predador]
 globals[
- xP
- yP
- xC1
- yC1
- xC2
- yC2
- xC3
- yC3
- xC4
- yC4
- equacao
-]
-
-predadores-own [
-  localPresa
-  manhattanPresaAG
-  manhattanPredadorAG
-  resultExtKorfAG
-  perseguindo?
+   xP
+   yP
+   xC1
+   yC1
+   xC2
+   yC2
+   xC3
+   yC3
+   xC4
+   yC4
+  equacao
+  eq1
+  eq2
 ]
 
 to setup
@@ -28,7 +22,7 @@ to setup
     set pcolor white
   ]
   create-presas 1 [
-    setxy 15 15
+    setxy 10 10
     set color yellow
   ]
   create-predadores 4 [
@@ -41,290 +35,33 @@ to setup
     set label-color black
   ]
   reset-ticks
+
 end
 
 to go
-  if not any? presas[
-    stop
-  ]
   if ticks > 1000[
     stop
   ]
 
-  ask presas [
-    ifelse aleatorio?
-      [andarAleatorio]
-      [fugir]
-  ]
-
-  ask predadores [
-    penalizado
-    pegar-posicoes
-
-    manhattan1AG
-    manhattan2AG
-    extendKorfAG
-
-    ;;capturar
-    calcula-distancias
-  ]
   ler-arquivo-c
+  pegar-posicoes
+  trocar-valor
+  ;dist-maluca
+  ask predador 1 [
+   let dist distance presa 0
+   show "########DISNTACE############################"
+   show dist
+  ]
+  show "##############AQUI#####################"
+  show d-manhattan "-" xC1 xP "-" yC1 yP "+"
 
   tick
 end
 
-to andarAleatorio
-  if random 100 < 90
-    [
-      right random 360
-      forward 1
-    ]
-end
-
-to fugir
-  if random 100 < 90
-  [
-    face min-one-of predadores [distance myself]
-    rt 180
-    fd 1
-  ]
-end
-
-to capturar
-  let prey one-of presas-here
-  if prey != nobody
-    [
-      ask presas [
-        die
-      ]
-    ]
-end
-
-to penalizado
-   let teste [who] of predadores in-radius 1.5
-   if length teste >= 2
-   [
-     move-to one-of patches
-   ]
-end
 
 ;;#############################################################################################
-;;########################################     INICIO     #####################################
+;;###################################     Pegar Equação  ######################################
 ;;#############################################################################################
-
-
-to-report ver-presa
-  let localPres [list pxcor pycor ] of presas in-radius fov
-  report localPres
-end
-
-to-report ver-predadores
-  let quem [who] of presas in-radius foc
-  report quem
-end
-
-
-;;######### Pegar posição dos agentes e salva em variáveis ###############################
-
-to pegar-posicoes
-  let localdaPresa [list pxcor pycor ] of presa 0
-  set xP item 0 localdaPresa
-  set yP item 1 localdaPresa
-
-  let localdoC1 [list pxcor pycor ] of predador 1
-  set xC1 item 0 localdoC1
-  set yC1 item 1 localdoC1
-
-  let localdoC2 [list pxcor pycor ] of predador 2
-  set xC2 item 0 localdoC2
-  set yC2 item 1 localdoC2
-
-  let localdoC3 [list pxcor pycor ] of predador 3
-  set xC3 item 0 localdoC3
-  set yC3 item 1 localdoC3
-
-  let localdoC4 [list pxcor pycor ] of predador 4
-  set xC4 item 0 localdoC4
-  set yC4 item 1 localdoC4
-end
-
-;;#############################################################################################
-;;########################################     NOVO     ########################################
-;;#############################################################################################
-
-
-;;######### Cáculo dos catetos, requisito para Coordenada Polar ###############################
-
-to-report catadj [hipo lado]
-  report (hipo * cos lado)
-end
-
-to-report catop [hipo lado]
-  report (hipo * sin lado)
-end
-
-;;#########################################################################################
-
-to manhattan1AG
-  ifelse ver-presa = []
-  [
-    set manhattanPresaAG [0 0 0 0 0 0 0 0]
-  ]
-  [
-    let distPolar 0
-    set manhattanPresaAG []
-    face turtle 0
-    let dir heading
-
-    foreach [0 45 90 135 180 225 270 315] [
-      ask patch-at-heading-and-distance ? 1 [
-        let hipo distance presa 0
-        set distPolar (abs catadj hipo dir) + (abs catop hipo dir)
-      ]
-      set manhattanPresaAG lput distPolar manhattanPresaAG
-    ]
-    set perseguindo? true
-  ]
-end
-
-
-
-
-
-
-;#################################################################################################################################
-
-
-to manhattan2AG
-  let distanciaAG 0
-  let lista1 [0 0 0 0 0 0 0 0]
-  let lista2 [0 0 0 0 0 0 0 0]
-  let lista3 [0 0 0 0 0 0 0 0]
-  set manhattanPredadorAG []
-  let quem [who] of predadores in-radius foc
-
-  foreach quem [
-    if (? != who)
-    [
-      let PC [list xcor ycor ] of predador ?
-      let xPC item 0 PC
-      let yPC item 1 PC
-
-      foreach [0 45 90 135 180 225 270 315] [
-        ask patch-at-heading-and-distance ? 1 [
-          set distanciaAG abs (xPC - pxcor) + abs (yPC - pycor)
-        ]
-        set manhattanPredadorAG lput distanciaAG manhattanPredadorAG
-      ]
-    ]
-  ]
-
-  if length manhattanPredadorAG > 0
-  [set lista1 sublist manhattanPredadorAG 0 8]
-  if length manhattanPredadorAG > 8
-  [set lista2 sublist manhattanPredadorAG 8 16]
-  if length manhattanPredadorAG > 16
-  [set lista3 sublist manhattanPredadorAG 16 24]
-
-  let soma (map [?1 + ?2 + ?3] lista1 lista2 lista3)
-
-
-  set manhattanPredadorAG (map [? * k] soma )
-end
-
-to extendKorfAG
-  set resultExtKorfAG (map [?1 - ?2 ] manhattanPresaAG manhattanPredadorAG)
-  ifelse resultExtKorfAG = [0 0 0 0 0 0 0 0]
-  [
-    right random 360
-    forward 1
-  ]
-  [
-    escolhaDirecao
-  ]
-end
-
-to escolhaDirecao
-  let listaDirecao melhorPosicao [0 45 90 135 180 225 270 315]
-  let direcao item listaDirecao [0 45 90 135 180 225 270 315]
-  set heading direcao
-  fd 1
-end
-
-to-report melhorPosicao [my-list]
-  let listaMenor menorDistancia resultExtKorfAG
-  let menorPosicao first listaMenor ;Armazena a posição onde esta a melhor direcao para seguir Ex lista [0 45 90 135 180 225 270 315] posicao 3 = 135º
-  report menorPosicao
-end
-
-to-report menorDistancia [my-list]
-  let min-value min my-list
-  let indices n-values (length my-list) [?]
-  let indices-and-values map [list ? item ? my-list] indices
-  report map [first ?] filter [item 1 ? = min-value] indices-and-values
-end
-
-
-
-;;#############################################################################################
-;;########################################     FIM  KORF   ########################################
-;;#############################################################################################
-
-
-to desenhar-grade
-  crt world-width [
-    set ycor min-pycor
-    set xcor who + .5
-    set color 2
-    set heading 0
-    pd
-    fd world-height
-    die
-  ]
-  crt world-height [
-    set xcor min-pxcor
-    set ycor who + .5
-    set color 2
-    set heading 90
-    pd
-    fd world-width
-    die
-  ]
-end
-
-
-
-
-
-
-to calcula-distancias
-  if(who = 1)
-  [
-  let dist1ppresa [distance myself] of presa 0
-  ;show dist1ppresa
-  let somatoriodist1 [distance myself] of predador 1 + [distance myself] of predador 2 + [distance myself] of predador 3 + [distance myself] of predador 4
-  ;show [distance myself] of predador 1 + [distance myself] of predador 2 + [distance myself] of predador 3 + [distance myself] of predador 4
-  ]
-  if(who = 2)
-  [
-    let dist2ppresa [distance myself] of presa 0
-    ;show dist2ppresa
-    let somatoriodist2 [distance myself] of predador 1 + [distance myself] of predador 2 + [distance myself] of predador 3 + [distance myself] of predador 4
-  ]
-  if(who = 3)
-  [
-    let dist3ppresa [distance myself] of presa 0
-    ;show dist3ppresa
-    let somatoriodist3 [distance myself] of predador 1 + [distance myself] of predador 2 + [distance myself] of predador 3 + [distance myself] of predador 4
-  ]
-  if(who = 4)
-  [
-    let dist4ppresa [distance myself] of presa 0
-    ;show dist4ppresa
-    let somatoriodist4 [distance myself] of predador 1 + [distance myself] of predador 2 + [distance myself] of predador 3 + [distance myself] of predador 4
-  ]
-end
-
 
 to-report string-to-list [ s ]
   report ifelse-value empty? s
@@ -354,43 +91,285 @@ to-report trocar [vantigo vnovo lista]
 end
 
 to-report realizar-troca [lista]
-  set lista trocar "A" "xP" lista
-  set lista trocar "B" "yP" lista
-  set lista trocar "C" "xC1" lista
-  set lista trocar "D" "xC2" lista
-  set lista trocar "E" "xC3" lista
-  set lista trocar "F" "xC4" lista
-  set lista trocar "G" "yC1" lista
-  set lista trocar "H" "yC2" lista
-  set lista trocar "I" "yC3" lista
-  set lista trocar "J" "yC4" lista
-  set lista trocar "K" "k" lista
-  set lista trocar "L" "+" lista
-  set lista trocar "M" "-" lista
-  set lista trocar "N" "*" lista
-  set lista trocar "O" "/" lista
-  set lista trocar "P" "(" lista
-  set lista trocar "Q" ")" lista
+  set lista trocar "A" "xP " lista
+  set lista trocar "B" "yP " lista
+  set lista trocar "C" "xC1 " lista
+  set lista trocar "D" "xC2 " lista
+  set lista trocar "E" "xC3 " lista
+  set lista trocar "F" "xC4 " lista
+  set lista trocar "G" "yC1 " lista
+  set lista trocar "H" "yC2 " lista
+  set lista trocar "I" "yC3 " lista
+  set lista trocar "J" "yC4 " lista
+  set lista trocar "K" "k " lista
+  set lista trocar "L" "+ " lista
+  set lista trocar "M" "- " lista
+  set lista trocar "N" "* " lista
+  set lista trocar "O" "/ " lista
+  set lista trocar "P" "( " lista
+  set lista trocar "Q" ") " lista
   report lista
 end
 
 to dividir-equacao
   let manhattanP1 sublist equacao 0 7
   let manhattanP2 sublist equacao 11 34
-  ;show realizar-troca manhattanP1
-  ;show realizar-troca manhattanP2
+
+
+  set eq1 realizar-troca manhattanP1
+  show "###########EQ1#######################"
+  ;show eq1
+  show "###########EQ2#######################"
+  set eq2 realizar-troca manhattanP2
+  ;show eq2
+
 end
+
+
+;;#############################################################################################
+;;############## Pegar posição dos agentes e salva em variáveis ###############################
+;;#############################################################################################
+
+
+to pegar-posicoes
+  let localdaPresa [list xcor ycor ] of presa 0
+  set xP item 0 localdaPresa
+  set yP item 1 localdaPresa
+
+  let localdoC1 [list xcor ycor ] of predador 1
+  set xC1 item 0 localdoC1
+  set yC1 item 1 localdoC1
+
+  let localdoC2 [list pxcor pycor ] of predador 2
+  set xC2 item 0 localdoC2
+  set yC2 item 1 localdoC2
+
+  let localdoC3 [list pxcor pycor ] of predador 3
+  set xC3 item 0 localdoC3
+  set yC3 item 1 localdoC3
+
+  let localdoC4 [list pxcor pycor ] of predador 4
+  set xC4 item 0 localdoC4
+  set yC4 item 1 localdoC4
+end
+
+to trocar-valor
+  let list_m1 []
+  ;let var "velocity"
+  ;let velocity 10
+  ;print runresult var
+  let t1 item 0 eq1
+  let t2 item 1 eq1
+  let t3 item 2 eq1
+  let t4 item 3 eq1
+  let t5 item 4 eq1
+  let t6 item 5 eq1
+  let t7 item 6 eq1
+  ;print runresult t1
+  ;print runresult "xC1 - xP"
+  ;print "################"
+  ;print xC1
+  ;print xP
+  ;print yC1
+  ;print yP
+  ;print "################"
+  let string_eq reduce word eq1
+
+  print eq1
+  print runresult string_eq
+  print "################"
+  ;print runresult (t1 t2 t3)
+  set list_m1 lput "(" list_m1
+  set list_m1 lput t1 list_m1
+  set list_m1 lput t2 list_m1
+  set list_m1 lput t3 list_m1
+  set list_m1 lput ")" list_m1
+  set list_m1 lput "^" list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput 2 list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput t4 list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput "(" list_m1
+  set list_m1 lput t5 list_m1
+  set list_m1 lput t6 list_m1
+  set list_m1 lput t7 list_m1
+  set list_m1 lput ")" list_m1
+  set list_m1 lput "^" list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput 2 list_m1
+  show list_m1
+  let string_m1 reduce word list_m1
+  ;show string_m1
+  let sominha runresult string_m1
+  show "########SOMINHA###############"
+  ;print sominha
+  ;print sqrt sominha
+end
+
+to-report v-manhattan [o1 v1 v2]
+  let r1 []
+  let s " "
+  set r1 lput v1 r1
+  set r1 lput s r1
+  set r1 lput o1 r1
+  set r1 lput s r1
+  set r1 lput v2 r1
+
+  set r1 reduce word r1
+  set r1 runresult r1
+
+  let r2 30 - r1
+
+  let r min list r1 r2
+
+  report r ^ 2
+
+end
+
+to-report d-manhattan [o1 x1 x2 o2 y1 y2 o3]
+  let v1 v-manhattan o1 x1 x2
+  let v2 v-manhattan o1 y1 y2
+
+  let r []
+  let s " "
+  set r lput v1 r
+  set r lput s r
+  set r lput o3 r
+  set r lput s r
+  set r lput v2 r
+
+  set r reduce word r
+  set r runresult r
+
+  report sqrt r
+end
+
+
+
+
+
+
+
+
+
+
+;##################################################################################
+;########################OLD#######################################################
+
+to dist-maluca
+  ;sqrt(min(|x1 - x2|, w - |x1 - x2|)^2 + min(|y1 - y2|, h - |y1-y2|)^2)
+  let x11 abs (xC1 - xP)
+  let x12 30 - x11
+  let y11 abs (yC1 - yP)
+  let y12 30 - y11
+  show "###################PS###########################"
+  let p1 min list x11 x12
+  let p2 min list y11 y12
+  set p1 p1 ^ 2
+  set p2 p2 ^ 2
+  let pp p1 + p2
+  show sqrt pp
+end
+
+
+to trocar-valorr
+  let list_m1 []
+  ;let var "velocity"
+  ;let velocity 10
+  ;print runresult var
+  let t1 item 0 eq1
+  let t2 item 1 eq1
+  let t3 item 2 eq1
+  let t4 item 3 eq1
+  let t5 item 4 eq1
+  let t6 item 5 eq1
+  let t7 item 6 eq1
+  ;print runresult t1
+  ;print runresult "xC1 - xP"
+  ;print "################"
+  ;print xC1
+  ;print xP
+  ;print yC1
+  ;print yP
+  ;print "################"
+  let string_eq reduce word eq1
+
+  print eq1
+  print runresult string_eq
+  print "################"
+  ;print runresult (t1 t2 t3)
+  set list_m1 lput "(" list_m1
+  set list_m1 lput t1 list_m1
+  set list_m1 lput t2 list_m1
+  set list_m1 lput t3 list_m1
+  set list_m1 lput ")" list_m1
+  set list_m1 lput "^" list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput 2 list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput t4 list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput "(" list_m1
+  set list_m1 lput t5 list_m1
+  set list_m1 lput t6 list_m1
+  set list_m1 lput t7 list_m1
+  set list_m1 lput ")" list_m1
+  set list_m1 lput "^" list_m1
+  set list_m1 lput " " list_m1
+  set list_m1 lput 2 list_m1
+  show list_m1
+  let string_m1 reduce word list_m1
+  ;show string_m1
+  let sominha runresult string_m1
+  show "########SOMINHA###############"
+  ;print sominha
+  ;print sqrt sominha
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @#$#@#$#@
 GRAPHICS-WINDOW
-309
-11
-781
-504
+210
+10
+623
+444
 -1
 -1
-14.90323
+13.0
 1
 10
 1
@@ -411,11 +390,11 @@ ticks
 30.0
 
 BUTTON
-6
-35
-79
-68
-NIL
+31
+64
+105
+97
+Setup
 setup
 NIL
 1
@@ -428,28 +407,11 @@ NIL
 1
 
 BUTTON
-80
-35
-143
-68
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-145
-35
-208
-68
-NIL
+117
+98
+180
+131
+Go
 go
 NIL
 1
@@ -460,79 +422,6 @@ NIL
 NIL
 NIL
 1
-
-BUTTON
-9
-440
-210
-473
-Desenhar Grades
-desenhar-grade
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-SLIDER
-6
-70
-208
-103
-fov
-fov
-3
-15
-15
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-7
-106
-208
-139
-foc
-foc
-3
-30
-4
-1
-1
-NIL
-HORIZONTAL
-
-SWITCH
-9
-178
-209
-211
-aleatorio?
-aleatorio?
-1
-1
--1000
-
-SLIDER
-7
-142
-208
-175
-k
-k
-0
-1
-0.7
-0.1
-1
-NIL
-HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -881,42 +770,6 @@ NetLogo 5.3.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
-<experiments>
-  <experiment name="1515" repetitions="250" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <metric>count turtles</metric>
-    <enumeratedValueSet variable="foc">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="k">
-      <value value="0.7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aleatorio?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="fov">
-      <value value="15"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="315" repetitions="250" runMetricsEveryStep="true">
-    <setup>setup</setup>
-    <go>go</go>
-    <metric>count turtles</metric>
-    <enumeratedValueSet variable="foc">
-      <value value="15"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="k">
-      <value value="0.7"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="aleatorio?">
-      <value value="false"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="fov">
-      <value value="3"/>
-    </enumeratedValueSet>
-  </experiment>
-</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
